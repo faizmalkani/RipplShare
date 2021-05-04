@@ -14,12 +14,13 @@ import java.io.*
 
 class MainActivity : AppCompatActivity()
 {
-    private val shareText = "What do you think of our Paneer Tikka Sandwich?\n" +
+    // The sharing text
+    private val shareText = expTitle +
             "\n" +
-            "\uD83D\uDCC3 Tell us what you think of our iconic sandwich\n" +
-            "\uD83C\uDFC6 Win a lead badge\n" +
+            "\uD83D\uDCC3 + "shortDescription" +
+            "\uD83C\uDFC6 + "rewardShortDescription" +
             "\n" +
-            "\uD83C\uDFAB I'm handing over one of my exclusive Indigo invites to you. Download Rippl and participate now: https://link.get-rippl.com/uUSxTuSLpH2saUwu5\n" +
+            "\uD83C\uDFAB I'm handing over one of my exclusive" + brandName + "invites to you. Download Rippl and participate now: " + expLink +
             "\n" +
             "It's all happening on Rippl!"
 
@@ -34,9 +35,17 @@ class MainActivity : AppCompatActivity()
 
         findViewById<ImageButton>(R.id.captureButton).setOnClickListener { _ ->
 
+            // Convert image from API into Bitmap
             val drawableAsBitmap = BitmapFactory.decodeResource(this.resources, R.drawable.ic_expimage)
+
+            // Create a file in the cache dir, with a fixed image name
+            /**
+             * @param parent The cache directory for the app
+             * @param child The filename for storing the bitmap
+             */
             val tempFile = File(cacheDir, "image.png")
 
+            // Write the bitmap to the newly created file
             try
             {
                 val fileOutStream = FileOutputStream(tempFile)
@@ -54,6 +63,7 @@ class MainActivity : AppCompatActivity()
             }
         }
 
+        // Call the share function to execute
         findViewById<ImageButton>(R.id.shareButton).setOnClickListener { _ ->
             shareImage()
         }
@@ -61,12 +71,19 @@ class MainActivity : AppCompatActivity()
 
     private fun shareImage()
     {
+        // Read the image back from the cache, with the same dir and filename as when written
         val imageFile = File(cacheDir, "image.png")
+
+        /**
+         * @param context The app's context
+         * @param authority Same as the authority defined in the manifest
+         * @param file The image file just written
+         */
         val contentUri: Uri = FileProvider.getUriForFile(this, "com.get-rippl.fileprovider", imageFile)
 
         val shareIntent = Intent()
-        shareIntent.action = Intent.ACTION_SEND
-        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        shareIntent.action = Intent.ACTION_SEND // Intent action
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) // Important for Android 10+
         shareIntent.setDataAndType(contentUri, this.contentResolver.getType(contentUri))
         shareIntent.putExtra(Intent.EXTRA_STREAM, contentUri)
         shareIntent.putExtra(Intent.EXTRA_TEXT, shareText)
